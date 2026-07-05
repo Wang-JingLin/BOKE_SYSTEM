@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}页面未找到{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}">
+{% endblock %}
+{% block content %}
+<div class="page-full">
+<div class="error-page">
+  <h1>404</h1>
+  <p>抱歉，您访问的页面不存在</p>
+  <a href="{{ url_for('article.index') }}" class="btn btn-primary">返回首页</a>
+</div>
+</div>
+{% endblock %}

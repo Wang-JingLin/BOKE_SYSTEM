@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}标签管理 — 管理后台{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-head">
+    <h2>🏷️ 标签管理</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}">概览</a>
+      <a href="{{ url_for('admin.article_list') }}">文章管理</a>
+      <a href="{{ url_for('admin.category_list') }}">分类管理</a>
+      <a href="{{ url_for('admin.tag_list') }}" class="active">标签管理</a>
+      <a href="{{ url_for('admin.comment_list') }}">评论管理</a>
+      <a href="{{ url_for('admin.user_list') }}">用户管理</a>
+    </nav>
+  </div>
+  <div class="admin-toolbar">
+    <form method="POST" class="inline-form">
+      <input type="text" name="name" placeholder="标签名称" required class="form-control" style="width:200px;">
+      <button type="submit" class="btn btn-primary btn-sm">添加</button>
+    </form>
+  </div>
+  <table class="admin-table">
+    <thead><tr><th>ID</th><th>名称</th><th>文章数</th><th>创建时间</th><th>操作</th></tr></thead>
+    <tbody>
+      {% for tag in tags %}
+      <tr>
+        <td>{{ tag.id }}</td>
+        <td><span class="tag">{{ tag.name }}</span></td>
+        <td>{{ tag.article_count }}</td>
+        <td>{{ tag.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="actions-cell">
+          <form method="POST" action="{{ url_for('admin.delete_tag', id=tag.id) }}" style="display:inline;" onsubmit="return confirm('确定删除标签「{{ tag.name }}」？')">
+            <button type="submit" class="btn btn-danger btn-xs">删除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}我的收藏 — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/article.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+{% block content %}
+<div class="fav-wrap">
+  <h2>⭐ 我的收藏</h2>
+  {% if favorites['items'] %}
+    {% for fav in favorites['items'] %}
+      <article class="post-card">
+        <h3 class="post-title" style="margin-bottom:6px;">
+          <a href="{{ url_for('article.detail', id=fav.article_id) }}">{{ fav.article.title }}</a>
+        </h3>
+        <p class="post-desc">{{ fav.article.summary or (fav.article.content|striptags)[:150] }}</p>
+        <div class="post-meta">
+          <span class="meta-date">{{ fav.article.created_at.strftime('%Y-%m-%d') }}</span>
+          {% if fav.article.category %}<span class="meta-cat">{{ fav.article.category.name }}</span>{% endif %}
+          <span style="margin-left:auto;font-size:.78rem;color:#bbb;">⭐ 收藏于 {{ fav.created_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <div class="post-stats" style="margin-top:10px;">
+          <span>👁 {{ fav.article.view_count }}</span>
+          <span>💬 {{ fav.article.comment_count }}</span>
+        </div>
+      </article>
+    {% endfor %}
+    {% if favorites.total_pages > 1 %}
+      <div style="display:flex;justify-content:center;gap:8px;padding:16px 0;">
+        {% if favorites.has_prev %}
+          <a href="{{ url_for('like_collect.my_favorites', page=favorites.prev_num) }}" class="page-link">‹ 上一页</a>
+        {% endif %}
+        <span style="padding:8px 12px;color:#999;">第 {{ favorites.page }}/{{ favorites.total_pages }} 页</span>
+        {% if favorites.has_next %}
+          <a href="{{ url_for('like_collect.my_favorites', page=favorites.next_num) }}" class="page-link">下一页 ›</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">还没有收藏任何文章</div>
+  {% endif %}
+</div>
+{% endblock %}

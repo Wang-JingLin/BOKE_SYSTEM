@@ -1,0 +1,47 @@
+/* ===================================================================
+   auth.css — 登录 / 注册
+   =================================================================== */
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  width: 100%;
+}
+
+.auth-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+.auth-card h2 {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.auth-card .auth-desc {
+  text-align: center;
+  color: var(--text-4);
+  font-size: .88rem;
+  margin-bottom: 28px;
+}
+
+.auth-link {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-3);
+  font-size: .88rem;
+}
+
+.auth-link a {
+  font-weight: 600;
+}

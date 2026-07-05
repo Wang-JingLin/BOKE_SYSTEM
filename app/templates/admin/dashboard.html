@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}管理后台 — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-head">
+    <h2>⚙️ 管理后台</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="active">概览</a>
+      <a href="{{ url_for('admin.article_list') }}">文章管理</a>
+      <a href="{{ url_for('admin.category_list') }}">分类管理</a>
+      <a href="{{ url_for('admin.tag_list') }}">标签管理</a>
+      <a href="{{ url_for('admin.comment_list') }}">评论管理</a>
+      <a href="{{ url_for('admin.user_list') }}">用户管理</a>
+    </nav>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><span class="stat-icon">📄</span><div><span class="stat-num">{{ article_count }}</span><span class="stat-label">文章</span></div></div>
+    <div class="stat-card"><span class="stat-icon">💬</span><div><span class="stat-num">{{ comment_count }}</span><span class="stat-label">评论</span></div></div>
+    <div class="stat-card"><span class="stat-icon">📁</span><div><span class="stat-num">{{ category_count }}</span><span class="stat-label">分类</span></div></div>
+    <div class="stat-card"><span class="stat-icon">🏷️</span><div><span class="stat-num">{{ tag_count }}</span><span class="stat-label">标签</span></div></div>
+    <div class="stat-card"><span class="stat-icon">👥</span><div><span class="stat-num">{{ user_count }}</span><span class="stat-label">用户</span></div></div>
+  </div>
+
+  <div class="section-card">
+    <h3>最近文章</h3>
+    <table class="admin-table">
+      <thead><tr><th>标题</th><th>作者</th><th>状态</th><th>时间</th></tr></thead>
+      <tbody>
+        {% for a in recent_articles %}
+        <tr>
+          <td><a href="{{ url_for('article.detail', id=a.id) }}">{{ a.title[:30] }}{% if a.title|length > 30 %}…{% endif %}</a></td>
+          <td>{{ a.author.username }}</td>
+          <td><span class="tag {% if a.is_published %}tag-published{% else %}tag-draft{% endif %}">{% if a.is_published %}已发布{% else %}草稿{% endif %}</span></td>
+          <td>{{ a.created_at.strftime('%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

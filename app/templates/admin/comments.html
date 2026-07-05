@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}评论管理 — 管理后台{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-head">
+    <h2>💬 评论管理</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}">概览</a>
+      <a href="{{ url_for('admin.article_list') }}">文章管理</a>
+      <a href="{{ url_for('admin.category_list') }}">分类管理</a>
+      <a href="{{ url_for('admin.tag_list') }}">标签管理</a>
+      <a href="{{ url_for('admin.comment_list') }}" class="active">评论管理</a>
+      <a href="{{ url_for('admin.user_list') }}">用户管理</a>
+    </nav>
+  </div>
+  <table class="admin-table">
+    <thead><tr><th>ID</th><th>内容</th><th>用户</th><th>文章</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+    <tbody>
+      {% for c in comments['items'] %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.content[:50] }}{% if c.content|length > 50 %}…{% endif %}</td>
+        <td>{{ c.author.username }}</td>
+        <td><a href="{{ url_for('article.detail', id=c.article_id) }}">#{{ c.article_id }}</a></td>
+        <td>{% if c.is_deleted %}<span class="tag tag-draft">已删除</span>{% else %}<span class="tag tag-published">正常</span>{% endif %}</td>
+        <td>{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="actions-cell">
+          {% if not c.is_deleted %}
+          <form method="POST" action="{{ url_for('admin.admin_delete_comment', id=c.id) }}" style="display:inline;" onsubmit="return confirm('确定删除？')">
+            <button type="submit" class="btn btn-danger btn-xs">删除</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if comments.total_pages > 1 %}
+  <div style="display:flex;justify-content:center;gap:8px;padding:16px 0;">
+    {% if comments.has_prev %}<a href="{{ url_for('admin.comment_list', page=comments.prev_num) }}" class="page-link">‹</a>{% endif %}
+    <span style="padding:8px 12px;color:#999;">{{ comments.page }}/{{ comments.total_pages }}</span>
+    {% if comments.has_next %}<a href="{{ url_for('admin.comment_list', page=comments.next_num) }}" class="page-link">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

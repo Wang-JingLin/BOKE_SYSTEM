@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}注册 — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>创建账号</h2>
+    <p class="auth-desc">注册一个账号开始写作</p>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.username.label }}
+        {{ form.username(class="form-control", placeholder="2-32 个字符") }}
+        {% for e in form.username.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.email.label }}
+        {{ form.email(class="form-control", placeholder="输入邮箱地址") }}
+        {% for e in form.email.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class="form-control", placeholder="至少 6 位") }}
+        {% for e in form.password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.confirm_password.label }}
+        {{ form.confirm_password(class="form-control", placeholder="再次输入密码") }}
+        {% for e in form.confirm_password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group" style="margin-top:24px;">
+        {{ form.submit(class="btn btn-primary btn-full") }}
+      </div>
+    </form>
+    <p class="auth-link">已有账号？<a href="{{ url_for('auth.login') }}">立即登录</a></p>
+  </div>
+</div>
+{% endblock %}

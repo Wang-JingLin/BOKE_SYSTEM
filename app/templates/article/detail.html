@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/article.css') }}">
+{% endblock %}
+{% block content %}
+<article class="detail-wrap">
+
+  <div class="detail-head">
+    {% if article.category %}<span class="meta-cat" style="display:inline-block;margin-bottom:8px;">{{ article.category.name }}</span>{% endif %}
+    <h1>{{ article.title }}</h1>
+    <div class="detail-meta">
+      <img src="{{ url_for('static', filename='image/' + article.author.avatar) }}" alt="" class="meta-avatar">
+      <strong style="color:#555;">{{ article.author.username }}</strong>
+      <span>{{ article.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+      <span>👁 {{ article.view_count }}</span>
+      <span>💬 {{ article.comment_count }}</span>
+    </div>
+  </div>
+
+  {% if article.cover_image %}
+  <div class="detail-cover">
+    <img src="{{ url_for('static', filename='upload/' + article.cover_image) }}" alt="{{ article.title }}">
+  </div>
+  {% endif %}
+
+  <div class="detail-body">{{ article.content|safe }}</div>
+
+  {% if article.tag_list %}
+  <div class="detail-foot">
+    {% for tag in article.tag_list %}
+      <a href="{{ url_for('article.index', tag=tag.id) }}" class="tag-item tag-sm">{{ tag.name }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- 交互按钮 -->
+  <div class="detail-actions">
+    {% if current_user.is_authenticated %}
+      <button class="btn btn-ghost {% if user_liked %}active" style="color:#1677ff;{% endif %}" onclick="toggleLike({{ article.id }})" id="likeBtn">
+        👍 <span id="likeCount">{{ article.like_count }}</span>
+      </button>
+      <button class="btn btn-ghost {% if user_favorited %}active" style="color:#faad14;{% endif %}" onclick="toggleFavorite({{ article.id }})" id="favBtn">
+        <span id="favIcon">{% if user_favorited %}★{% else %}☆{% endif %}</span>
+        <span id="favCount">{{ article.favorite_count }}</span>
+      </button>
+    {% else %}
+      <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-ghost">👍 {{ article.like_count }}</a>
+      <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-ghost">☆ {{ article.favorite_count }}</a>
+    {% endif %}
+    {% if current_user.is_authenticated and (current_user.id == article.user_id or current_user.is_admin) %}
+      <a href="{{ url_for('article.edit', id=article.id) }}" class="btn btn-outline btn-sm">✏️ 编辑</a>
+      <form method="POST" action="{{ url_for('article.delete', id=article.id) }}" style="display:inline;" onsubmit="return confirm('确定删除？')">
+        <button type="submit" class="btn btn-danger btn-sm">🗑 删除</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- 上下篇 -->
+  <div class="post-nav">
+    <div class="nav-prev">
+      {% if prev_article %}
+        <span class="label">‹ 上一篇</span>
+        <a href="{{ url_for('article.detail', id=prev_article.id) }}">{{ prev_article.title }}</a>
+      {% endif %}
+    </div>
+    <div class="nav-next">
+      {% if next_article %}
+        <span class="label">下一篇 ›</span>
+        <a href="{{ url_for('article.detail', id=next_article.id) }}">{{ next_article.title }}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 评论 -->
+  <div class="comment-zone">
+    <h3>💬 评论 <span style="color:#bbb;font-weight:400;">({{ article.comment_count }})</span></h3>
+
+    {% if current_user.is_authenticated %}
+      <form method="POST" action="{{ url_for('comment.post_comment', article_id=article.id) }}" class="comment-box">
+        <textarea name="content" class="form-control" rows="3" placeholder="写下你的评论…" maxlength="1000" required></textarea>
+        <button type="submit" class="btn btn-primary btn-sm">发表评论</button>
+      </form>
+    {% else %}
+      <div class="login-tip"><a href="{{ url_for('auth.login', next=request.path) }}">登录</a>后可以发表评论</div>
+    {% endif %}
+
+    <div class="comment-list">
+      {% for comment in comments %}
+      <div class="comment-item" id="c{{ comment.id }}">
+        <div class="cmt-avatar"><img src="{{ url_for('static', filename='image/' + comment.author.avatar) }}" alt=""></div>
+        <div class="cmt-body">
+          <div class="cmt-head">
+            <strong>{{ comment.author.username }}</strong>
+            <span class="cmt-time">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          </div>
+          <div class="cmt-text">{{ comment.content }}</div>
+          <div class="cmt-actions">
+            <button class="btn-link" onclick="showReply({{ comment.id }})">回复</button>
+            {% if current_user.is_authenticated and (current_user.id == comment.user_id or current_user.is_admin) %}
+              <form method="POST" action="{{ url_for('comment.delete_comment', comment_id=comment.id) }}" style="display:inline;" onsubmit="return confirm('确定删除？')">
+                <button type="submit" class="btn-link text-danger">删除</button>
+              </form>
+            {% endif %}
+          </div>
+
+          <div id="replyBox-{{ comment.id }}" class="reply-box" style="display:none;">
+            <form method="POST" action="{{ url_for('comment.reply_comment', comment_id=comment.id) }}">
+              <textarea name="content" class="form-control" rows="2" placeholder="回复 {{ comment.author.username }}…" maxlength="1000" required></textarea>
+              <button type="submit" class="btn btn-primary btn-xs" style="margin-top:6px;">回复</button>
+            </form>
+          </div>
+
+          {% if comment.replies %}
+          <div class="reply-list">
+            {% for r in comment.replies %}{% if not r.is_deleted %}
+            <div class="reply-item">
+              <div class="cmt-avatar" style="flex-shrink:0;"><img src="{{ url_for('static', filename='image/' + r.author.avatar) }}" alt="" style="width:30px;height:30px;border-radius:50%;"></div>
+              <div class="cmt-body">
+                <div class="cmt-head">
+                  <strong>{{ r.author.username }}</strong>
+                  <span class="cmt-time">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="cmt-text">{{ r.content }}</div>
+              </div>
+            </div>
+            {% endif %}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">暂无评论，快来抢沙发吧~</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/article.js') }}"></script>
+{% endblock %}

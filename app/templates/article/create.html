@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}发布文章 — 博客系统{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+{% endblock %}
+{% block content %}
+<div class="editor-page">
+
+  <!-- ===== 顶部导航栏 ===== -->
+  <div class="editor-topbar">
+    <div class="editor-topbar-left">
+      <span class="editor-brand">log</span>
+      <a href="{{ url_for('article.index') }}" class="editor-back">
+        <span class="arrow">‹</span> 发布文章
+      </a>
+    </div>
+    <div class="editor-topbar-right">
+      <span class="editor-notif">🔔<span class="editor-notif-dot"></span></span>
+      <img src="{{ url_for('static', filename='image/' + current_user.avatar) }}" alt="" class="editor-avatar">
+    </div>
+  </div>
+
+  <!-- ===== 格式工具栏 ===== -->
+  <div class="editor-toolbar" id="editorToolbar">
+    <!-- 撤销 / 重做 -->
+    <div class="tool-group">
+      <button class="tool-btn" data-cmd="undo" title="撤销 (Ctrl+Z)"><span class="tool-icon">↩</span><span class="tool-label">撤销</span></button>
+      <button class="tool-btn" data-cmd="redo" title="重做 (Ctrl+Shift+Z)"><span class="tool-icon">↪</span><span class="tool-label">重做</span></button>
+      <button class="tool-btn" data-cmd="history" title="历史版本"><span class="tool-icon">🕐</span><span class="tool-label">历史</span></button>
+    </div>
+    <!-- 格式 / 加粗 / 颜色 / 背景 / 清除 -->
+    <div class="tool-group">
+      <div class="tool-btn-wrap">
+        <button class="tool-btn" data-cmd="headingMenu" title="选择标题"><span class="tool-icon">H</span><span class="tool-label">格式</span></button>
+        <div class="heading-dropdown" id="headingDropdown">
+          <div class="heading-item" data-tag="p"><span class="heading-check">✓ </span>正文</div>
+          <div class="heading-item heading-1" data-tag="h1"><span class="heading-check"></span>标题 1</div>
+          <div class="heading-item heading-2" data-tag="h2"><span class="heading-check"></span>标题 2</div>
+          <div class="heading-item heading-3" data-tag="h3"><span class="heading-check"></span>标题 3</div>
+          <div class="heading-item heading-4" data-tag="h4"><span class="heading-check"></span>标题 4</div>
+          <div class="heading-item heading-5" data-tag="h5"><span class="heading-check"></span>标题 5</div>
+          <div class="heading-item heading-6" data-tag="h6"><span class="heading-check"></span>标题 6</div>
+        </div>
+      </div>
+      <button class="tool-btn" data-cmd="bold" title="加粗 (Ctrl+B)"><span class="tool-icon"><b>B</b></span><span class="tool-label">加粗</span></button>
+      <div class="tool-btn-split" title="文字颜色">
+        <button class="tool-btn tool-btn-main" data-cmd="foreColor" data-val="#e53e3e"><span class="tool-icon" style="color:#e53e3e;">A</span><span class="tool-label">颜色</span></button>
+        <button class="tool-btn tool-btn-drop" data-cmd="foreColorPalette">▼</button>
+      </div>
+      <div class="tool-btn-split" title="文字背景">
+        <button class="tool-btn tool-btn-main" data-cmd="hiliteColor" data-val="#ffeeba"><span class="tool-icon" style="background:#ffeeba;border-radius:2px;">A</span><span class="tool-label">背景</span></button>
+        <button class="tool-btn tool-btn-drop" data-cmd="hiliteColorPalette">▼</button>
+      </div>
+      <button class="tool-btn" data-cmd="removeFormat" title="清除格式"><span class="tool-icon">↵</span><span class="tool-label">清除</span></button>
+    </div>
+    <!-- 列表 / 对齐 / 水平线 / 引用 / 代码 -->
+    <div class="tool-group">
+      <div class="tool-btn-split" title="列表">
+        <button class="tool-btn tool-btn-main" data-cmd="insertUnorderedList"><span class="tool-icon">☰</span><span class="tool-label">列表</span></button>
+        <button class="tool-btn tool-btn-drop" data-cmd="listMenu">▼</button>
+      </div>
+      <div class="tool-btn-split" title="对齐">
+        <button class="tool-btn tool-btn-main" data-cmd="justifyLeft"><span class="tool-icon">≡</span><span class="tool-label">对齐</span></button>
+        <button class="tool-btn tool-btn-drop" data-cmd="alignMenu">▼</button>
+      </div>
+      <button class="tool-btn" data-cmd="insertHorizontalRule" title="水平线"><span class="tool-icon">—</span><span class="tool-label">水平线</span></button>
+      <button class="tool-btn" data-cmd="formatBlock" data-val="<blockquote>" title="块引用"><span class="tool-icon">❝</span><span class="tool-label">块引用</span></button>
+      <button class="tool-btn" data-cmd="code" title="插入代码块"><span class="tool-icon">&lt;/&gt;</span><span class="tool-label">代码</span></button>
+    </div>
+    <!-- 表格 / 图像 / 视频 / 公式 / 链接 -->
+    <div class="tool-group">
+      <button class="tool-btn" data-cmd="table" title="插入表格"><span class="tool-icon">⊟</span><span class="tool-label">表格</span></button>
+      <button class="tool-btn" data-cmd="image" title="插入图片"><span class="tool-icon">🖼</span><span class="tool-label">图像</span></button>
+      <button class="tool-btn" data-cmd="video" title="插入视频"><span class="tool-icon">▶</span><span class="tool-label">视频</span></button>
+      <button class="tool-btn" data-cmd="formula" title="插入公式"><span class="tool-icon">Σ</span><span class="tool-label">公式</span></button>
+      <button class="tool-btn" data-cmd="link" title="插入链接 (Ctrl+K)"><span class="tool-icon">🔗</span><span class="tool-label">链接</span></button>
+    </div>
+    <!-- 目录 / 投票 / 宽屏 -->
+    <div class="tool-group">
+      <button class="tool-btn" data-cmd="toc" title="插入目录"><span class="tool-icon">📑</span><span class="tool-label">目录</span></button>
+      <button class="tool-btn" data-cmd="vote" title="插入投票"><span class="tool-icon">✓</span><span class="tool-label">投票</span></button>
+      <button class="tool-btn" data-cmd="wide" title="宽屏模式"><span class="tool-icon">⛶</span><span class="tool-label">宽屏</span></button>
+    </div>
+    <button class="tool-toggle" id="mdToggle">⇄ 使用 MD 编辑器</button>
+  </div>
+
+  <!-- ===== 主体三栏 ===== -->
+  <div class="editor-body">
+
+    <!-- 左侧：目录 + 文章属性 -->
+    <aside class="editor-toc" id="editorToc">
+      <div class="editor-toc-header">
+        <h3>目录</h3>
+        <span class="editor-toc-fold" id="tocFold">‹</span>
+      </div>
+      <div class="editor-toc-body" id="tocBody">
+        <div class="toc-hint">为文内增加标题，这里将自动生成目录</div>
+      </div>
+
+      <!-- 文章属性折叠区 -->
+      <div class="toc-meta" style="border-top:1px solid #eee;margin-top:16px;padding-top:14px;">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label style="font-size:0.78rem;color:#999;">分类</label>
+          <select name="category_id" class="form-control" style="font-size:0.82rem;padding:6px 10px;">
+            <option value="">选择分类</option>
+            {% for cat in form.category_id.choices %}
+              <option value="{{ cat[0] }}">{{ cat[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label style="font-size:0.78rem;color:#999;">标签</label>
+          <input type="text" name="tags" class="form-control" placeholder="逗号分隔" style="font-size:0.82rem;padding:6px 10px;">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.78rem;color:#999;">封面图</label>
+          <input type="file" name="cover_image" class="form-control-file" style="font-size:0.78rem;" accept="image/*">
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中央：编辑区 -->
+    <main class="editor-main" id="editorMain">
+      <form method="POST" enctype="multipart/form-data" id="articleForm">
+        {{ form.hidden_tag() }}
+
+        <!-- 标题 -->
+        <div class="editor-title-wrap">
+          <div class="editor-title-row">
+            <input type="text" name="title" class="editor-title-input"
+                   placeholder="请输入文章标题（5 ~ 100 个字）"
+                   maxlength="100" autofocus
+                   value="{{ form.title.data or '' }}"
+                   oninput="updateTitleHint(this)">
+            <span class="editor-title-hint">
+              <span class="pencil">✏️</span>
+              <span id="titleHint">还需输入 5 个字</span>
+            </span>
+          </div>
+          {% for e in form.title.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+        </div>
+
+        <!-- 正文 — contenteditable 富文本编辑区 -->
+        <div class="editor-content-wrap">
+          <div class="editor-richtext" id="richtextArea"
+               contenteditable="true"
+               data-placeholder="开始写你的文章…"
+               oninput="onRichTextChange(this)">
+          </div>
+
+          <!-- 隐藏 textarea，提交时同步 HTML -->
+          <textarea name="content" id="contentHidden" style="display:none;"></textarea>
+
+          {% for e in form.content.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+
+          <!-- 创作灵感提示 -->
+          <div class="editor-inspire" id="inspireBlock">
+            <span class="inspire-tag">#创作灵感#</span>
+            <ul class="inspire-list">
+              <li>记录工作实践、项目复盘</li>
+              <li>写技术笔记巩固知识要点</li>
+              <li>发表职场感悟心得</li>
+              <li>搬运自己的原创文章到这</li>
+            </ul>
+          </div>
+        </div>
+
+        <input type="hidden" name="is_published" id="isPublishedInput" value="1">
+      </form>
+    </main>
+
+    <!-- 右侧：AI 助手 -->
+    <aside class="editor-ai">
+      <div class="editor-ai-card">
+        <span class="editor-ai-badge">AI</span>
+        <div class="editor-ai-title">AI 助手</div>
+        <div class="editor-ai-item" data-ai="outline">☰ 大纲生成</div>
+        <div class="editor-ai-item" data-ai="code">&lt;/&gt; 代码生成</div>
+        <div class="editor-ai-item" data-ai="search">📑 学术搜索</div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ===== 底部操作栏 ===== -->
+  <div class="editor-bottombar">
+    <div class="editor-bottom-left">
+      <span>共 <strong id="wordCount">0</strong> 字</span>
+      <select>
+        <option>公开</option>
+        <option>私密</option>
+      </select>
+    </div>
+    <div class="editor-bottom-right">
+      <button class="btn-draft" onclick="saveDraft()">💾 保存草稿</button>
+      <button class="btn-schedule" onclick="alert('定时发布功能即将上线')">⏱ 定时发布</button>
+      <button class="btn-publish" onclick="submitPublish()">🚀 发布</button>
+    </div>
+  </div>
+
+  <!-- ===== 隐藏的文件输入（用于工具栏"图像"按钮） ===== -->
+  <input type="file" id="imageUpload" accept="image/*" style="display:none;" onchange="insertUploadedImage(this)">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}

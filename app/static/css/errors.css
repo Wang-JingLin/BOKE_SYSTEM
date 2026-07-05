@@ -1,0 +1,7 @@
+/* ===================================================================
+   errors.css — 404 / 500
+   =================================================================== */
+
+.error-page { text-align:center; padding:120px 20px; }
+.error-page h1 { font-size:6rem; font-weight:800; color:var(--border); margin-bottom:12px; line-height:1; letter-spacing:-4px; }
+.error-page p { font-size:1.05rem; color:var(--text-3); margin-bottom:28px; }

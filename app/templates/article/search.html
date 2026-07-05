@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}搜索 "{{ keyword }}" — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/article.css') }}">
+{% endblock %}
+{% block content %}
+<div class="page-full">
+<div class="search-head">
+  <h2>🔍 搜索结果</h2>
+  <p>关键词：<strong>{{ keyword }}</strong> · 共 {{ articles.total }} 篇文章</p>
+</div>
+
+{% if articles['items'] %}
+  <div class="article-feed">
+    {% for a in articles['items'] %}
+    <article class="post-card">
+      <h3 class="post-title"><a href="{{ url_for('article.detail', id=a.id) }}">{{ a.title }}</a></h3>
+      <p class="post-desc">{{ a.summary or (a.content|striptags)[:200] }}</p>
+      <div class="post-meta">
+        <span class="meta-author">{{ a.author.username }}</span>
+        <span class="meta-date">{{ a.created_at.strftime('%Y-%m-%d') }}</span>
+        <span>👁 {{ a.view_count }}</span>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  {% if articles.total_pages > 1 %}
+  <div class="page-foot" style="justify-content:center;">
+    <div class="pagination">
+      {% if articles.has_prev %}
+        <a href="{{ url_for('article.search', q=keyword, page=articles.prev_num) }}" class="page-link">‹ 上一页</a>
+      {% endif %}
+      <span style="padding:8px 12px;color:#999;">第 {{ articles.page }}/{{ articles.total_pages }} 页</span>
+      {% if articles.has_next %}
+        <a href="{{ url_for('article.search', q=keyword, page=articles.next_num) }}" class="page-link">下一页 ›</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+{% else %}
+  <div class="empty-box">
+    <div class="empty-icon">🔍</div>
+    <p>没有找到相关文章</p>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

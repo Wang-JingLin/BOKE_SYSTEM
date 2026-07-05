@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}首页 — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/article.css') }}">
+{% endblock %}
+{% block content %}
+<div class="home-layout">
+
+  <!-- ===== 侧边栏 ===== -->
+  <aside class="sidebar">
+
+    <!-- 🔥 热门文章 -->
+    <section class="side-section">
+      <h3 class="side-title">🔥 热门文章</h3>
+      <div class="side-body">
+        {% if hot_articles %}
+          {% for art in hot_articles %}
+          <a href="{{ url_for('article.detail', id=art.id) }}" class="hot-item">
+            <span class="hot-badge hot-badge-{{ loop.index }}">{{ loop.index }}</span>
+            <div class="hot-info">
+              <span class="hot-title">{{ art.title }}</span>
+              <span class="hot-views">{{ art.view_count }} 次浏览</span>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state" style="padding:16px 0;">暂无数据</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- 🔖 标签云 -->
+    <section class="side-section">
+      <h3 class="side-title">🔖 标签云</h3>
+      <div class="side-body">
+        {% if tags %}
+          <div class="tag-cloud">
+            {% for tag in tags %}
+              {% set count = tag_counts.get(tag.id, 0) %}
+              {% set sz = 'sm' if count <= 1 else ('md' if count <= 3 else 'lg') %}
+              {% set hot = 'tag-hot' if count >= 3 else '' %}
+              <a href="{{ url_for('article.index', tag=tag.id) }}"
+                 class="tag-item tag-{{ sz }} {{ hot }}"
+                 {% if current_tag == tag.id %}style="background:#1677ff;color:#fff;border-color:#1677ff;"{% endif %}>
+                {{ tag.name }}
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding:16px 0;">暂无标签</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- 📁 文章分类 -->
+    <section class="side-section">
+      <h3 class="side-title">📁 文章分类</h3>
+      <div class="side-body">
+        <ul class="cat-list">
+          {% for cat in categories %}
+          <li>
+            <a href="{{ url_for('article.index', category=cat.id) }}"
+               class="cat-link {% if current_category == cat.id %}active{% endif %}">
+              <span class="cat-name">{{ cat.name }}</span>
+              <span class="cat-count">{{ cat.article_count }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- ===== 主内容 ===== -->
+  <div class="main-area">
+
+    <!-- 列表头 -->
+    <header class="list-head">
+      <h2>
+        {%- if current_category -%}
+          {% for cat in categories %}{% if cat.id == current_category %}{{ cat.name }}{% endif %}{% endfor %}
+        {%- elif current_tag -%}
+          {% for tag in tags %}{% if tag.id == current_tag %}{{ tag.name }}{% endif %}{% endfor %}
+        {%- else -%}最新文章
+        {%- endif -%}
+      </h2>
+      {% if current_category or current_tag %}
+        <a href="{{ url_for('article.index') }}" class="clear-filter">✕ 清除筛选</a>
+      {% endif %}
+    </header>
+
+    <!-- 文章列表 -->
+    <div class="article-feed">
+      {% if articles['items'] %}
+        {% for a in articles['items'] %}
+        <article class="post-card">
+          <h3 class="post-title"><a href="{{ url_for('article.detail', id=a.id) }}">{{ a.title }}</a></h3>
+          <p class="post-desc">{{ a.summary or (a.content|striptags)[:150] }}</p>
+          <div class="post-meta">
+            <img src="{{ url_for('static', filename='image/' + a.author.avatar) }}" alt="" class="meta-avatar">
+            <span class="meta-author">{{ a.author.username }}</span>
+            <span class="meta-date">{{ a.created_at.strftime('%Y-%m-%d') }}</span>
+            {% if a.category %}<span class="meta-cat">{{ a.category.name }}</span>{% endif %}
+          </div>
+          <div class="post-tags">
+            {% for tag in a.tag_list %}
+              <a href="{{ url_for('article.index', tag=tag.id) }}" class="post-tag">{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+          <div class="post-stats">
+            <span>👁 {{ a.view_count }}</span>
+            <span>👍 {{ a.like_count }}</span>
+            <span>💬 {{ a.comment_count }}</span>
+          </div>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-box">
+          <div class="empty-icon">📭</div>
+          <p>暂无文章</p>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('article.create') }}" class="btn btn-primary btn-sm">发布第一篇</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 分页 -->
+    {% if articles.total_pages > 1 %}
+    <div class="page-foot">
+      <span class="page-info">第 {{ articles.page }}/{{ articles.total_pages }} 页 · 共 {{ articles.total }} 篇</span>
+      <div class="pagination">
+        {% if articles.has_prev %}
+          <a href="{{ url_for('article.index', page=articles.prev_num, category=current_category, tag=current_tag) }}" class="page-link">‹ 上一页</a>
+        {% endif %}
+        {% for p in range(1, articles.total_pages + 1) %}
+          {% if p == articles.page %}
+            <span class="page-current">{{ p }}</span>
+          {% elif p <= 3 or p > articles.total_pages - 2 or (p >= articles.page - 1 and p <= articles.page + 1) %}
+            <a href="{{ url_for('article.index', page=p, category=current_category, tag=current_tag) }}" class="page-link">{{ p }}</a>
+          {% elif p == 4 or p == articles.total_pages - 3 %}
+            <span class="page-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+        {% if articles.has_next %}
+          <a href="{{ url_for('article.index', page=articles.next_num, category=current_category, tag=current_tag) }}" class="page-link">下一页 ›</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

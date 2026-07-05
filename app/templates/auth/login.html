@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}登录 — 博客系统{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=2">
+{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>欢迎回来</h2>
+    <p class="auth-desc">登录你的账号以继续</p>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.username.label }}
+        {{ form.username(class="form-control", placeholder="输入用户名") }}
+        {% for e in form.username.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class="form-control", placeholder="输入密码") }}
+        {% for e in form.password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group" style="margin-top:24px;">
+        {{ form.submit(class="btn btn-primary btn-full") }}
+      </div>
+    </form>
+    <p class="auth-link">还没有账号？<a href="{{ url_for('auth.register') }}">立即注册</a></p>
+  </div>
+</div>
+{% endblock %}

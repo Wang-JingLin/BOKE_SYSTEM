@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}文章管理 — 管理后台{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-head">
+    <h2>📄 文章管理</h2>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}">概览</a>
+      <a href="{{ url_for('admin.article_list') }}" class="active">文章管理</a>
+      <a href="{{ url_for('admin.category_list') }}">分类管理</a>
+      <a href="{{ url_for('admin.tag_list') }}">标签管理</a>
+      <a href="{{ url_for('admin.comment_list') }}">评论管理</a>
+      <a href="{{ url_for('admin.user_list') }}">用户管理</a>
+    </nav>
+  </div>
+  <div class="admin-toolbar">
+    <div class="filter-tabs">
+      <a href="{{ url_for('admin.article_list', status='all') }}" {% if status=='all' %}class="active"{% endif %}>全部</a>
+      <a href="{{ url_for('admin.article_list', status='published') }}" {% if status=='published' %}class="active"{% endif %}>已发布</a>
+      <a href="{{ url_for('admin.article_list', status='draft') }}" {% if status=='draft' %}class="active"{% endif %}>草稿</a>
+    </div>
+  </div>
+  <table class="admin-table">
+    <thead><tr><th>ID</th><th>标题</th><th>作者</th><th>分类</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+    <tbody>
+      {% for a in articles['items'] %}
+      <tr>
+        <td>{{ a.id }}</td>
+        <td><a href="{{ url_for('article.detail', id=a.id) }}">{{ a.title[:25] }}{% if a.title|length > 25 %}…{% endif %}</a></td>
+        <td>{{ a.author.username }}</td>
+        <td>{{ a.category.name if a.category else '—' }}</td>
+        <td><span class="tag {% if a.is_published %}tag-published{% else %}tag-draft{% endif %}">{% if a.is_published %}已发布{% else %}草稿{% endif %}</span></td>
+        <td>{{ a.created_at.strftime('%m-%d') }}</td>
+        <td class="actions-cell">
+          <form method="POST" action="{{ url_for('admin.toggle_article', id=a.id) }}" style="display:inline;">
+            <button type="submit" class="btn btn-ghost btn-xs">{% if a.is_published %}下架{% else %}发布{% endif %}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if articles.total_pages > 1 %}
+  <div style="display:flex;justify-content:center;gap:8px;padding:16px 0;">
+    {% if articles.has_prev %}<a href="{{ url_for('admin.article_list', page=articles.prev_num, status=status) }}" class="page-link">‹</a>{% endif %}
+    {% for p in range(1, articles.total_pages + 1) %}
+      {% if p == articles.page %}<span class="page-current" style="min-width:32px;height:32px;font-size:0.82rem;">{{ p }}</span>
+      {% elif p <= 3 or p > articles.total_pages - 2 %}<a href="{{ url_for('admin.article_list', page=p, status=status) }}" class="page-link" style="min-width:32px;height:32px;font-size:0.82rem;">{{ p }}</a>{% endif %}
+    {% endfor %}
+    {% if articles.has_next %}<a href="{{ url_for('admin.article_list', page=articles.next_num, status=status) }}" class="page-link">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

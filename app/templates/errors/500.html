@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}服务器错误{% endblock %}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}">
+{% endblock %}
+{% block content %}
+<div class="page-full">
+<div class="error-page">
+  <h1>500</h1>
+  <p>服务器内部错误，请稍后再试</p>
+  <a href="{{ url_for('article.index') }}" class="btn btn-primary">返回首页</a>
+</div>
+</div>
+{% endblock %}
